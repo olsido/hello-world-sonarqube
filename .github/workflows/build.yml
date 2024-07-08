@@ -37,3 +37,17 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         run: ./gradlew build sonar --info
+      - name: Install jq
+        run: sudo apt-get install -y jq
+      - name: Check Quality Gate status
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        run: |
+          status=$(curl -s -u $SONAR_TOKEN: $SONAR_HOST_URL/api/qualitygates/project_status?projectKey=olsido_hello-world-sonarqube_692681b7-67f5-48f6-b8e2-31678233a4cf | jq -r .projectStatus.status)
+          if [ "$status" != "OK" ]; then
+            echo "Quality Gate failed"
+            exit 1
+          else
+            echo "Quality Gate passed"
+          fi
